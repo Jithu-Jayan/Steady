@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Steady – exam stress and study tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#F2F5F6;--surface:#fff;--soft:#F6F8F9;--ink:#14202E;--muted:#657386;--line:#E1E7EB;--accent:#1F6F68;--on:#fff;
+  --study:#BAC8E7;--stress:#C4506A;--good:#2A8077;--bad:#C4506A;
+  --c1:#C4506A;--c2:#D68A55;--c3:#B89E3F;--c4:#5E9C7E;--c5:#2A8077;
+  --sh:0 1px 2px rgba(20,32,46,.05),0 14px 34px -16px rgba(20,32,46,.16);
+  --serif:"Instrument Serif",Georgia,"Times New Roman",serif;--sans:"Hanken Grotesk","Segoe UI",system-ui,-apple-system,sans-serif;
+  --ease:cubic-bezier(.22,.8,.3,1);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0D1520;--surface:#142030;--soft:#192739;--ink:#E8EEF5;--muted:#93A1B5;--line:#243246;--accent:#5CC2B8;--on:#0D1520;--study:#4A6397;--stress:#F08FA2;--good:#5CC2B8;--bad:#F08FA2;--c1:#F08FA2;--c2:#EDA878;--c3:#D6BD62;--c4:#7FC4A0;--c5:#5CC2B8;--sh:0 1px 2px rgba(0,0,0,.3),0 14px 34px -16px rgba(0,0,0,.6)}}
+:root[data-theme="dark"]{--bg:#0D1520;--surface:#142030;--soft:#192739;--ink:#E8EEF5;--muted:#93A1B5;--line:#243246;--accent:#5CC2B8;--on:#0D1520;--study:#4A6397;--stress:#F08FA2;--good:#5CC2B8;--bad:#F08FA2;--c1:#F08FA2;--c2:#EDA878;--c3:#D6BD62;--c4:#7FC4A0;--c5:#5CC2B8;--sh:0 1px 2px rgba(0,0,0,.3),0 14px 34px -16px rgba(0,0,0,.6)}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 76px);scroll-behavior:smooth}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.bar{max-width:1120px;margin:0 auto;padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
+.brand{display:flex;align-items:center;gap:10px;font:400 28px/1 var(--serif);letter-spacing:.01em}
+.brand svg{color:var(--accent)}
+.tools{display:flex;gap:8px}
+.ib{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:14.5px;font-weight:500;transition:border-color .2s,transform .2s var(--ease)}
+.ib:hover{border-color:var(--accent)}.ib:active{transform:scale(.96)}
+.ib.sq{width:40px;padding:0;justify-content:center}
+.wrap{max-width:1120px;margin:0 auto;padding:44px 20px 40px}
+.hero{margin-bottom:34px}
+h1{font:400 clamp(44px,7vw,72px)/1.02 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+.hero p{margin:0;color:var(--muted);font-size:18px;max-width:54ch}
+.grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:22px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:26px;box-shadow:var(--sh)}
+.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 84px)}
+@media(max-width:900px){.side{position:static}}
+.stack{display:grid;gap:22px;min-width:0}
+h2{font:400 28px/1.15 var(--serif);margin:0 0 4px}
+.sub{color:var(--muted);font-size:14.5px;margin:0 0 20px}
+fieldset{border:0;padding:0;margin:0 0 22px}
+legend,.l{font-weight:600;font-size:14.5px;margin:0 0 10px;padding:0;display:block}
+.opts{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.opt{position:relative;display:block}
+.opt input{position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;cursor:pointer}
+.opt .c{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 2px 9px;border:1px solid var(--line);border-radius:14px;color:var(--muted);background:var(--surface);transition:all .28s var(--ease)}
+.opt .c small{font-size:12px;font-weight:500;line-height:1}
+.opt:hover .c{border-color:var(--c);color:var(--c)}
+.opt input:checked+.c{border-color:var(--c);color:var(--c);background:color-mix(in srgb,var(--c) 11%,var(--surface));transform:translateY(-3px);box-shadow:0 10px 18px -12px var(--c)}
+.opt input:focus-visible+.c{outline:2px solid var(--accent);outline-offset:3px}
+.opt svg{transition:transform .35s var(--ease)}
+.opt input:checked+.c svg{transform:scale(1.12)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+input[type=number],input[type=date],textarea{width:100%;font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:11px 12px;transition:border-color .2s,background .2s}
+input:hover,textarea:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+input:focus,textarea:focus{outline:none;border-color:var(--accent);background:var(--surface)}
+textarea{resize:vertical;min-height:72px;margin-bottom:20px}
+.save{width:100%;height:52px;border:0;border-radius:14px;background:var(--accent);color:var(--on);font-weight:600;font-size:16px;transition:transform .2s var(--ease),opacity .25s,filter .2s}
+.save:hover:not(:disabled){filter:brightness(1.08)}.save:active:not(:disabled){transform:scale(.98)}
+.save:disabled{opacity:.38;cursor:not-allowed}
+.hint{min-height:20px;margin:10px 0 0;font-size:13.5px;color:var(--muted);text-align:center}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:26px}
+@media(max-width:620px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{padding:2px 0 0 14px;border-left:2px solid var(--line)}
+.stat b{display:block;font:400 40px/1.05 var(--serif)}
+.stat small{display:block;color:var(--muted);font-size:13px;line-height:1.35}
+.d{font-size:12.5px;font-weight:600}.d.g{color:var(--good)}.d.b{color:var(--bad)}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.seg{display:inline-flex;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:var(--muted);transition:all .25s var(--ease)}
+.seg button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 4px rgba(20,32,46,.14)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:6px}
+.legend i{display:inline-block;width:12px;height:8px;border-radius:3px;margin-right:7px}
+.chart{position:relative;touch-action:pan-y}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font:12px var(--sans);fill:var(--muted)}
+.tt{position:absolute;top:0;pointer-events:none;background:var(--ink);color:var(--bg);border-radius:12px;padding:9px 12px;font-size:12.5px;line-height:1.5;white-space:nowrap;opacity:0;transform:translate(-50%,-6px);transition:opacity .15s}
+.tt.on{opacity:1}.tt b{display:block;font-size:13px}
+.empty{display:grid;place-items:center;text-align:center;min-height:210px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);padding:20px}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.anim .bx{transform-box:fill-box;transform-origin:50% 100%;animation:grow .7s var(--ease) both}
+.anim .ln{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1s var(--ease) .15s forwards}
+.anim .pt,.anim .ls{animation:fade .6s ease .5s both}
+.tip{display:flex;gap:14px;padding:16px 0;border-top:1px solid var(--line)}
+.tip:first-of-type{border-top:0;padding-top:4px}
+.dot{flex:none;width:9px;height:9px;border-radius:50%;background:var(--accent);margin-top:9px}
+.tip.care .dot{background:var(--stress)}
+.tip h3{margin:0 0 2px;font-size:16px;font-weight:600}
+.tip p{margin:0;color:var(--muted);max-width:66ch;font-size:15px}
+.note{font-size:13.5px;color:var(--muted);margin:14px 0 0;padding-top:14px;border-top:1px solid var(--line)}
+ul{list-style:none;margin:0;padding:0}
+.h{display:flex;align-items:center;gap:14px;padding:13px 0;border-top:1px solid var(--line)}
+.h:first-child{border-top:0}
+.h .m{flex:1;min-width:0;font-size:14.5px}
+.h .m span{display:block;color:var(--muted);font-size:13.5px;overflow-wrap:anywhere}
+.h .a{display:flex;gap:6px}
+.lk{border:0;background:none;color:var(--muted);font-size:13.5px;font-weight:500;padding:6px 8px;border-radius:8px;transition:color .2s,background .2s}
+.lk:hover{color:var(--ink);background:var(--soft)}
+footer{max-width:1120px;margin:0 auto;padding:6px 20px 48px;color:var(--muted);font-size:13.5px}
+footer p{margin:0;max-width:78ch}
+dialog{border:1px solid var(--line);border-radius:22px;background:var(--surface);color:var(--ink);padding:28px;width:min(420px,calc(100vw - 32px));box-shadow:0 30px 80px -20px rgba(0,0,0,.45)}
+dialog[open]{animation:fade .25s ease}
+dialog::backdrop{background:rgba(10,18,28,.5);backdrop-filter:blur(3px)}
+dialog p{color:var(--muted);font-size:15px;margin:6px 0 20px}
+.col{display:grid;gap:10px}
+.btn{height:46px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:15px;transition:all .2s var(--ease)}
+.btn:hover{border-color:var(--accent)}.btn:active{transform:scale(.98)}
+.btn.danger{color:var(--bad)}.btn.danger.arm{background:var(--bad);border-color:var(--bad);color:#fff}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);z-index:9;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:999px;font-size:14.5px;font-weight:500;display:flex;align-items:center;gap:10px;transition:all .4s var(--ease);box-shadow:0 14px 34px -10px rgba(0,0,0,.4)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+.brand{color:inherit;text-decoration:none}
+.links{display:flex;gap:4px}
+.links a,.tabs a{padding:8px 15px;border-radius:999px;font-size:14.5px;font-weight:500;color:var(--muted);text-decoration:none;transition:all .25s var(--ease)}
+.links a:hover,.tabs a:hover{color:var(--ink)}
+a[aria-current=page]{background:var(--surface);color:var(--ink)!important;box-shadow:0 1px 4px rgba(20,32,46,.14)}
+.tabs{display:none}
+.page{display:none}.page.on{display:block;animation:rise .55s var(--ease)}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.ph{margin-bottom:26px}.ph h1{font-size:clamp(40px,6vw,60px)}.ph p{margin:0;color:var(--muted);font-size:18px}
+.week{display:flex;justify-content:space-between;gap:6px}
+.wd{display:flex;flex-direction:column;align-items:center;gap:8px}
+.wd .f{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;border:1px dashed var(--line);transition:transform .3s var(--ease)}
+.wd.on .f{border:0;background:color-mix(in srgb,var(--c) 14%,var(--surface));color:var(--c)}
+.wd:hover .f{transform:translateY(-2px)}
+.wd small{font-size:12.5px;color:var(--muted)}.wd.now small{color:var(--ink);font-weight:600}
+.more{display:inline-block;margin-top:14px;color:var(--accent);font-weight:600;font-size:14.5px;text-decoration:none}
+.more:hover{text-decoration:underline}
+#teaser .tip{padding:0;border:0}
+.orbw{display:grid;place-items:center;height:240px;position:relative}
+.orb{width:180px;height:180px;border-radius:50%;background:color-mix(in srgb,var(--accent) 16%,var(--surface));border:2px solid var(--accent);transform:scale(.55);transition:transform 1s var(--ease)}
+.orbt{position:absolute;font:400 24px var(--serif);text-align:center;pointer-events:none}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+@media(max-width:900px){.three{grid-template-columns:1fr}}
+@media(max-width:760px){
+  .links{display:none}.ib .t{display:none}.ib{width:40px;padding:0;justify-content:center}
+  .tabs{display:flex;position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:6;justify-content:space-around;background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:999px;padding:6px;box-shadow:var(--sh)}
+  .tabs a{flex:1;text-align:center;padding:10px 4px;font-size:13px}
+  .wrap{padding-bottom:110px}footer{padding-bottom:110px}
+  .toast{bottom:calc(env(safe-area-inset-bottom,0px) + 84px)}
+}
+</style>
+</head>
+<body>
+<nav><div class="bar">
+  <a class="brand" href="#/today"><svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 15c3-7 5-7 8 0s5 7 8 0 2-4 4-4"/></svg>Steady</a>
+  <div class="links" aria-label="Pages"><a href="#/today" data-p="today">Today</a><a href="#/trends" data-p="trends">Trends</a><a href="#/insights" data-p="insights">Insights</a><a href="#/history" data-p="history">History</a><a href="#/support" data-p="support">Support</a></div>
+  <div class="tools">
+    <button class="ib" id="dataBtn" type="button" aria-label="Your data"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg><span class="t">Your data</span></button>
+    <button class="ib sq" id="theme" type="button" aria-label="Switch between light and dark theme"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg></button>
+  </div>
+</div></nav>
+<div class="tabs" aria-label="Pages"><a href="#/today" data-p="today">Today</a><a href="#/trends" data-p="trends">Trends</a><a href="#/insights" data-p="insights">Insights</a><a href="#/history" data-p="history">History</a><a href="#/support" data-p="support">Support</a></div>
+
+<main class="wrap">
+<section class="page on" id="p-today" aria-label="Today">
+  <div class="hero"><h1 id="greet">Hello.</h1><p id="lead"></p></div>
+  <div class="grid">
+    <section class="card side" aria-labelledby="ci">
+      <h2 id="ci">Today's check-in</h2>
+      <p class="sub">Two taps are enough. Add the rest if you like.</p>
+      <fieldset><legend>Mood</legend><div class="opts" id="moodOpts"></div></fieldset>
+      <fieldset><legend>Stress</legend><div class="opts" id="stressOpts"></div></fieldset>
+      <div class="two">
+        <div><label class="l" for="hours">Study hours</label><input type="number" id="hours" min="0" max="24" step="0.25" inputmode="decimal" placeholder="4.5"></div>
+        <div><label class="l" for="sleep">Sleep hours</label><input type="number" id="sleep" min="0" max="24" step="0.25" inputmode="decimal" placeholder="7"></div>
+      </div>
+      <label class="l" for="note">Note</label>
+      <textarea id="note" maxlength="300" placeholder="Anything worth remembering about today"></textarea>
+      <div style="margin-bottom:18px"><label class="l" for="date">Day</label><input type="date" id="date"></div>
+      <button class="save" id="save" type="button" disabled>Save check-in</button>
+      <p class="hint" id="hint" aria-live="polite">Select a mood and a stress level to continue.</p>
+    </section>
+    <div class="stack">
+      <section class="card"><h2>Your week</h2><p class="sub">The last seven days at a glance.</p><div class="week" id="week"></div></section>
+      <section class="card"><h2>Latest insight</h2><p class="sub">Based on your recent entries.</p><div id="teaser"></div><a class="more" href="#/insights">See all insights</a></section>
+    </div>
+  </div>
+</section>
+
+<section class="page" id="p-trends" aria-label="Trends">
+  <header class="ph"><h1>Trends</h1><p>How your mood, stress and study time move together.</p></header>
+  <section class="card" aria-labelledby="tr">
+    <div class="stats" id="stats"></div>
+    <div class="head">
+      <h2 id="tr">Over time</h2>
+      <div class="seg" role="group" aria-label="Chart range">
+        <button type="button" data-r="7" aria-pressed="false">7 days</button>
+        <button type="button" data-r="14" aria-pressed="true">14 days</button>
+        <button type="button" data-r="30" aria-pressed="false">30 days</button>
+      </div>
+    </div>
+    <div class="legend"><span><i style="background:var(--study)"></i>Study hours</span><span><i style="background:var(--accent)"></i>Mood</span><span><i style="background:var(--stress)"></i>Stress</span></div>
+    <div class="chart" id="chart"></div>
+  </section>
+</section>
+
+<section class="page" id="p-insights" aria-label="Insights">
+  <header class="ph"><h1>Insights</h1><p>Plain-language observations from your last seven days.</p></header>
+  <section class="card" aria-labelledby="tp">
+    <h2 id="tp">What your week shows</h2>
+    <p class="sub">Updated every time you save a check-in.</p>
+    <div id="tips"></div>
+    <p class="note">Steady supports self-reflection and is not medical advice. If you ever feel unsafe, contact your local emergency number or a crisis line right away.</p>
+  </section>
+</section>
+
+<section class="page" id="p-history" aria-label="History">
+  <header class="ph"><h1>History</h1><p id="hcount"></p></header>
+  <section class="card" aria-labelledby="hs">
+    <h2 id="hs">All entries</h2>
+    <p class="sub">Select Edit to revisit a day.</p>
+    <ul id="hist"></ul>
+  </section>
+</section>
+
+<section class="page" id="p-support" aria-label="Support">
+  <header class="ph"><h1>Support</h1><p>Small practices for heavy weeks, and when to ask for more help.</p></header>
+  <section class="card" aria-labelledby="bh" style="margin-bottom:22px">
+    <h2 id="bh">Guided breathing</h2>
+    <p class="sub">Four seconds in, six seconds out. Two minutes is enough to settle your nervous system.</p>
+    <div class="orbw"><div class="orb" id="orb"></div><div class="orbt" id="orbt">Ready when you are</div></div>
+    <button class="save" id="breathBtn" type="button" style="max-width:260px;display:block;margin:6px auto 0">Start</button>
+  </section>
+  <div class="three">
+    <section class="card"><h2>Work in blocks</h2><p class="sub" style="margin:0">Study for 50 minutes, then rest for 10 away from your phone. Stop at a fixed time each evening.</p></section>
+    <section class="card"><h2>Protect your sleep</h2><p class="sub" style="margin:0">Sleep is when memory consolidates. A steady wake-up time helps more than a late night of cramming.</p></section>
+    <section class="card"><h2>Plan tonight</h2><p class="sub" style="margin:0">Write tomorrow's first task before bed. A clear first step makes starting much easier.</p></section>
+  </div>
+  <section class="card" style="margin-top:22px"><h2>When to reach out</h2>
+    <p class="sub" style="margin:0;max-width:70ch">If low mood or stress lasts more than a couple of weeks, or is getting in the way of eating, sleeping or studying, speak to a campus counsellor, a doctor or someone you trust. You do not need to wait for a crisis. If you ever feel unsafe, contact your local emergency number or a crisis line right away.</p>
+  </section>
+</section>
+</main>
+<footer><p>Your entries are stored only in this browser. Nothing is sent to a server.</p></footer>
+
+<dialog id="dlg" aria-labelledby="dt">
+  <h2 id="dt">Your data</h2>
+  <p>Entries live only in this browser. Export a copy before clearing your browser data or switching devices.</p>
+  <div class="col">
+    <button class="btn" id="export" type="button">Export as JSON</button>
+    <button class="btn danger" id="wipe" type="button">Delete all entries</button>
+    <button class="btn" id="close" type="button">Close</button>
+  </div>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  var KEY='steady.entries.v1',THEME='steady.theme';
+  var MOODS=['Awful','Low','Okay','Good','Great'],STRESS=['Calm','Mild','Tense','High','Intense'];
+  var MOUTH=['M12 27Q20 20 28 27','M13 27Q20 23 27 27','M13 25H27','M13 23Q20 29 27 23','M11 22Q20 32 29 22'];
+  var store={},range=14,memOnly=false;
+  try{var r=localStorage.getItem(KEY);if(r)store=JSON.parse(r)||{}}catch(e){memOnly=true}
+  function persist(){try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){memOnly=true}}
+  var $=function(i){return document.getElementById(i)};
+  var calm=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function iso(d){var m=d.getMonth()+1,x=d.getDate();return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(x<10?'0':'')+x}
+  function fromIso(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2])}
+  function addDays(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x}
+  function pretty(s){var d=fromIso(s);return d.getDate()+' '+MON[d.getMonth()]}
+  function avg(a){return a.length?a.reduce(function(x,y){return x+y},0)/a.length:null}
+  function fmt(v,dp){return v==null?'–':String(Math.round(v*Math.pow(10,dp))/Math.pow(10,dp))}
+  var today=iso(new Date());
+
+  function face(l,s){return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="20" cy="20" r="15"/><circle cx="14.5" cy="16" r=".9" fill="currentColor"/><circle cx="25.5" cy="16" r=".9" fill="currentColor"/><path d="'+MOUTH[l-1]+'"/></svg>'}
+  function meter(l){var h='<svg width="32" height="30" viewBox="0 0 32 30" aria-hidden="true">';for(var i=0;i<5;i++){var ht=8+i*5;h+='<rect x="'+(2+i*6.2)+'" y="'+(28-ht)+'" width="4.6" height="'+ht+'" rx="2" fill="currentColor" opacity="'+(i<l?1:.2)+'"/>'}return h+'</svg>'}
+  function build(id,name,labels,fn,ramp){
+    $(id).innerHTML=labels.map(function(t,i){var l=i+1,c=ramp?6-l:l;return '<label class="opt" style="--c:var(--c'+c+')"><input type="radio" name="'+name+'" value="'+l+'" aria-label="'+name+' '+l+' of 5, '+t+'"><span class="c">'+fn(l)+'<small>'+t+'</small></span></label>'}).join('');
+  }
+  build('moodOpts','mood',MOODS,function(l){return face(l,34)},false);
+  build('stressOpts','stress',STRESS,meter,true);
+  function pick(n){var e=document.querySelector('input[name='+n+']:checked');return e?+e.value:null}
+  function setPick(n,v){document.querySelectorAll('input[name='+n+']').forEach(function(e){e.checked=+e.value===v})}
+
+  var dateEl=$('date');dateEl.value=today;dateEl.max=today;
+  function ready(){var ok=pick('mood')&&pick('stress');$('save').disabled=!ok;if(!ok)$('hint').textContent='Select a mood and a stress level to continue.';else if($('hint').dataset.k!=='saved')$('hint').textContent=''}
+  function loadForm(){
+    var e=store[dateEl.value];
+    setPick('mood',e?e.mood:0);setPick('stress',e?e.stress:0);
+    $('hours').value=e&&e.hours!=null?e.hours:'';$('sleep').value=e&&e.sleep!=null?e.sleep:'';$('note').value=e&&e.note?e.note:'';
+    $('ci').textContent=dateEl.value===today?"Today's check-in":'Check-in for '+pretty(dateEl.value);$('save').textContent=e?'Update check-in':'Save check-in';$('hint').dataset.k='';ready();
+  }
+  document.addEventListener('change',function(e){if(e.target.name==='mood'||e.target.name==='stress'){$('hint').dataset.k='';ready()}});
+  dateEl.addEventListener('change',function(){if(!dateEl.value||dateEl.value>today)dateEl.value=today;loadForm()});
+  function num(id){var v=$(id).value;if(v==='')return null;var n=parseFloat(v);return isNaN(n)?null:Math.min(24,Math.max(0,n))}
+
+  var tt;function toast(t){var el=$('toast');el.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'+t;el.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('on')},2400)}
+
+  $('save').addEventListener('click',function(){
+    var m=pick('mood'),s=pick('stress');if(!m||!s)return;
+    var had=!!store[dateEl.value];
+    store[dateEl.value]={mood:m,stress:s,hours:num('hours'),sleep:num('sleep'),note:$('note').value.trim()};
+    persist();
+    toast((had?'Updated ':'Saved ')+(dateEl.value===today?'today':pretty(dateEl.value))+(memOnly?' (this session only)':''));
+    $('save').textContent='Update check-in';$('hint').dataset.k='saved';$('hint').innerHTML='Saved. <a class="more" style="margin:0" href="#/trends">See your trends</a>';
+    render(true);
+  });
+
+  function dates(){return Object.keys(store).sort()}
+  function win(from,to,key){var a=iso(addDays(new Date(),-from)),b=iso(addDays(new Date(),-to));return dates().filter(function(d){return d>=a&&d<=b}).map(function(d){return key?store[d][key]:Object.assign({date:d},store[d])})}
+  function streak(){var n=0,d=new Date();if(!store[iso(d)])d=addDays(d,-1);while(store[iso(d)]){n++;d=addDays(d,-1)}return n}
+
+  function tween(el,to,dp){
+    var from=parseFloat(el.dataset.v);if(isNaN(from))from=0;el.dataset.v=to;
+    if(calm||from===to){el.textContent=fmt(to,dp);return}
+    var t0=performance.now();(function f(t){var p=Math.min(1,(t-t0)/600),e=1-Math.pow(1-p,3);el.textContent=fmt(from+(to-from)*e,dp);if(p<1)requestAnimationFrame(f)})(t0);
+  }
+  function stats(){
+    var spec=[['mood','Mood, 7-day average',1,1],['stress','Stress, 7-day average',1,-1],['hours','Study hours per day',1,0],['streak','Day streak',0,0]];
+    $('stats').innerHTML=spec.map(function(s,i){return '<div class="stat"><b id="sv'+i+'">–</b><small>'+s[1]+'</small><span class="d" id="sd'+i+'"></span></div>'}).join('');
+    spec.forEach(function(s,i){
+      var cur,prev;
+      if(s[0]==='streak'){cur=streak();tween($('sv'+i),cur,0);return}
+      cur=avg(win(6,0,s[0]).filter(function(x){return x!=null}));prev=avg(win(13,7,s[0]).filter(function(x){return x!=null}));
+      if(cur==null){$('sv'+i).textContent='–';return}
+      tween($('sv'+i),Math.round(cur*10)/10,1);
+      if(prev!=null&&Math.abs(cur-prev)>=.1&&s[3]!==0){var up=cur>prev,good=(up?1:-1)*s[3]>0,d=$('sd'+i);d.className='d '+(good?'g':'b');d.textContent=(up?'↑ ':'↓ ')+fmt(Math.abs(cur-prev),1)+' vs last week'}
+      else if(prev!=null&&s[3]===0&&Math.abs(cur-prev)>=.1){$('sd'+i).className='d';$('sd'+i).textContent=(cur>prev?'↑ ':'↓ ')+fmt(Math.abs(cur-prev),1)+' vs last week'}
+    });
+  }
+
+  var W=640,H=280,L=34,R=30,T=18,B=34,iw=W-L-R,ih=H-T-B,days=[],step=0,maxH=8;
+  function xc(i){return L+step*i+step/2}
+  function chart(anim){
+    var box=$('chart');
+    if(!dates().length){box.innerHTML='<div class="empty"><div><b style="display:block;color:var(--ink);font-size:16px;margin-bottom:4px">Your trend starts here</b>Save your first check-in and it will appear on this chart.</div></div>';return}
+    var n=range;days=[];for(var i=n-1;i>=0;i--)days.push(iso(addDays(new Date(),-i)));
+    maxH=8;days.forEach(function(d){var e=store[d];if(e&&e.hours!=null&&e.hours>maxH)maxH=Math.ceil(e.hours)});
+    step=iw/n;
+    var yH=function(v){return T+ih*(1-v/maxH)},yM=function(v){return T+ih*(1-(v-1)/4)};
+    var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Study hours as bars with mood and stress as lines over the last '+n+' days">';
+    for(var k=0;k<=4;k++){var gy=T+ih*k/4;s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+gy+'" y2="'+gy+'" stroke="var(--line)"/><text x="'+(L-8)+'" y="'+(gy+4)+'" text-anchor="end">'+(Math.round(maxH*(1-k/4)*10)/10)+'</text><text x="'+(W-R+8)+'" y="'+(gy+4)+'">'+(5-k)+'</text>'}
+    var every=n<=7?1:n<=14?2:5;
+    days.forEach(function(d,i){
+      var e=store[d],bw=Math.max(5,step*.56);
+      if(e&&e.hours!=null&&e.hours>0){var y=yH(e.hours);s+='<rect class="bx" style="animation-delay:'+(i*28)+'ms" x="'+(xc(i)-bw/2)+'" y="'+y+'" width="'+bw+'" height="'+(T+ih-y)+'" rx="4" fill="var(--study)"/>'}
+      if((n-1-i)%every===0)s+='<text x="'+xc(i)+'" y="'+(H-10)+'" text-anchor="middle">'+pretty(d)+'</text>';
+    });
+    function line(key,color,dash,cls){
+      var p='',gap=true,dots='';
+      days.forEach(function(d,i){var e=store[d];if(!e){gap=true;return}var x=xc(i).toFixed(1),y=yM(e[key]).toFixed(1);p+=(gap?'M':'L')+x+' '+y+' ';gap=false;dots+='<circle class="pt" cx="'+x+'" cy="'+y+'" r="4.2" fill="var(--surface)" stroke="'+color+'" stroke-width="2.4"/>'});
+      return '<path class="'+cls+'" pathLength="1" d="'+p+'" fill="none" stroke="'+color+'" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"'+(dash?' stroke-dasharray="1"':'')+'/>'+dots;
+    }
+    s+=line('stress','var(--stress)',false,'ls')+line('mood','var(--accent)',false,'ln');
+    s+='<line id="guide" y1="'+T+'" y2="'+(T+ih)+'" stroke="var(--muted)" stroke-dasharray="3 4" opacity="0"/></svg><div class="tt" id="tt"></div>';
+    box.innerHTML=s;box.classList.remove('anim');if(anim&&!calm){void box.offsetWidth;box.classList.add('anim')}
+  }
+  var cb=$('chart');
+  function hover(ev){
+    var svg=cb.querySelector('svg');if(!svg||!days.length)return;
+    var r=svg.getBoundingClientRect(),vx=(ev.clientX-r.left)/r.width*W,i=Math.floor((vx-L)/step);
+    var g=$('guide'),t=$('tt');if(!g||!t)return;
+    if(i<0||i>=days.length){leave();return}
+    var e=store[days[i]],x=xc(i);g.setAttribute('x1',x);g.setAttribute('x2',x);g.setAttribute('opacity',.6);
+    t.innerHTML='<b>'+pretty(days[i])+'</b>'+(e?'Mood '+e.mood+' · Stress '+e.stress+(e.hours!=null?'<br>'+e.hours+' h study':'')+(e.sleep!=null?' · '+e.sleep+' h sleep':''):'No entry');
+    var px=x/W*r.width,half=t.offsetWidth/2;px=Math.max(half,Math.min(r.width-half,px));
+    t.style.left=px+'px';t.classList.add('on');
+  }
+  function leave(){var g=$('guide'),t=$('tt');if(g)g.setAttribute('opacity',0);if(t)t.classList.remove('on')}
+  cb.addEventListener('pointermove',hover);cb.addEventListener('pointerdown',hover);cb.addEventListener('pointerleave',leave);
+
+  function tips(){
+    var w=win(6,0),out=[];
+    if(w.length<3)return [{t:'Keep checking in',b:'Patterns become visible after about three days of entries. Log what you can each evening, including the harder days, which are the most informative.'}];
+    var mo=w.map(function(e){return e.mood}),st=w.map(function(e){return e.stress});
+    var hr=w.filter(function(e){return e.hours!=null}).map(function(e){return e.hours}),sl=w.filter(function(e){return e.sleep!=null}).map(function(e){return e.sleep});
+    var aM=avg(mo),aS=avg(st),aH=avg(hr),aSl=avg(sl),low=mo.filter(function(m){return m<=2}).length,hi=st.filter(function(x){return x>=4}).length;
+    var h=Math.floor(w.length/2),dl=avg(mo.slice(-h))-avg(mo.slice(0,h));
+    if(low>=3)out.push({care:1,t:'Several low days recently',b:'Your mood was low on '+low+' of your last '+w.length+' check-ins. It is worth telling someone: a friend, tutor, campus counsellor or doctor. You do not need to wait until exams are over.'});
+    if(hi>=3||aS>=3.8)out.push({care:1,t:'Stress is running high',b:'Try a slow breath, in for four seconds and out for six, for two minutes. Then choose one thing to postpone tomorrow and write your next study task as a single concrete step.'});
+    if(aH!=null&&aH>=7&&(aM<=2.8||aS>=3.5))out.push({t:'Long hours, heavy cost',b:'You are averaging '+fmt(aH,1)+' study hours a day and it is showing. Returns shrink after a point, so try 50 minutes on and 10 off, with a firm stop time each evening.'});
+    if(aH!=null&&aH<2&&aS>=3)out.push({t:'High stress, little studying',b:'Avoidance is a common response to pressure. Begin with 20 minutes on the easiest topic. A small start usually reduces stress more than waiting to feel ready.'});
+    if(sl.length>=3&&aSl<6.5)out.push({t:'Sleep is running short',b:'You are averaging '+fmt(aSl,1)+' hours. Memory consolidation depends on sleep, so an extra hour in bed often beats an extra hour of revision. A fixed wake time is the easiest place to start.'});
+    if(dl>=.7)out.push({t:'Mood is rising',b:'Your mood is higher in the second half of the week. Look at what changed, whether sleep, a break or a conversation, and keep it in your routine.'});
+    if(dl<=-.7&&low<3)out.push({t:'Mood is slipping',b:'Your mood has dipped over the week. Check the basics: sleep, meals, daylight, and one conversation that is not about exams.'});
+    if(!out.length)out.push({t:'A steady week',b:'Mood and stress look stable. Keep your breaks, sleep and routine as they are, and keep logging so you notice early if something shifts.'});
+    return out.slice(0,4);
+  }
+  function hist(){
+    var ul=$('hist');ul.innerHTML='';var ds=dates().reverse();$('hcount').textContent=ds.length?ds.length+(ds.length===1?' entry':' entries')+', stored only in this browser.':'Your entries will appear here.';
+    if(!ds.length){ul.innerHTML='<li class="h"><span class="m" style="color:var(--muted)">No entries yet.</span></li>';return}
+    ds.forEach(function(d){
+      var e=store[d],li=document.createElement('li');li.className='h';
+      li.innerHTML='<span style="color:var(--c'+e.mood+')">'+face(e.mood,30)+'</span><div class="m"><b></b> <span class="x"></span><span class="n"></span></div><div class="a"><button class="lk" type="button">Edit</button><button class="lk" type="button">Remove</button></div>';
+      li.querySelector('b').textContent=pretty(d)+' · '+MOODS[e.mood-1];
+      li.querySelector('.x').style.display='inline';
+      li.querySelector('.x').textContent='· Stress '+STRESS[e.stress-1].toLowerCase()+(e.hours!=null?' · '+e.hours+' h study':'');
+      li.querySelector('.n').textContent=e.note||'';if(!e.note)li.querySelector('.n').remove();
+      var b=li.querySelectorAll('button');
+      b[0].addEventListener('click',function(){dateEl.value=d;loadForm();location.hash='#/today';toast('Editing '+pretty(d))});
+      b[1].addEventListener('click',function(){delete store[d];persist();loadForm();render(false);toast('Entry removed')});
+      ul.appendChild(li);
+    });
+  }
+  function greet(){
+    var h=new Date().getHours();$('greet').textContent=h<12?'Good morning.':h<18?'Good afternoon.':'Good evening.';
+    var s=streak();$('lead').textContent=store[today]?"You have checked in today"+(s>1?' and are on a '+s+'-day streak.':'.'):(s>0?'You are on a '+s+'-day streak. A minute now keeps it going.':'Take a minute to check in. Small, regular notes reveal how exam pressure really affects you.');
+  }
+  function render(anim){
+    greet();stats();week();chart(anim);
+    var T2=tips();$('teaser').innerHTML=tipH(T2[0]);$('tips').innerHTML=T2.map(function(x){return '<div class="tip'+(x.care?' care':'')+'"><span class="dot"></span><div><h3>'+x.t+'</h3><p>'+x.b+'</p></div></div>'}).join('');
+    hist();
+  }
+  document.querySelectorAll('.seg button').forEach(function(b){b.addEventListener('click',function(){range=+b.dataset.r;document.querySelectorAll('.seg button').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});chart(true)})});
+
+  var dlg=$('dlg'),wipe=$('wipe');
+  function disarm(){wipe.classList.remove('arm');wipe.textContent='Delete all entries'}
+  $('dataBtn').addEventListener('click',function(){disarm();dlg.showModal()});
+  $('close').addEventListener('click',function(){dlg.close()});
+  dlg.addEventListener('click',function(e){if(e.target===dlg)dlg.close()});
+  dlg.addEventListener('close',disarm);
+  wipe.addEventListener('click',function(){
+    if(!wipe.classList.contains('arm')){wipe.classList.add('arm');wipe.textContent='Tap again to confirm deletion';return}
+    store={};persist();dlg.close();loadForm();render(false);toast('All entries deleted');
+  });
+  $('export').addEventListener('click',function(){
+    var u=URL.createObjectURL(new Blob([JSON.stringify(store,null,2)],{type:'application/json'})),a=document.createElement('a');
+    a.href=u;a.download='steady-data.json';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},500);toast('Export ready');
+  });
+  $('theme').addEventListener('click',function(){
+    var rt=document.documentElement,c=rt.getAttribute('data-theme'),dark=c?c==='dark':window.matchMedia('(prefers-color-scheme:dark)').matches,nx=dark?'light':'dark';
+    rt.setAttribute('data-theme',nx);try{localStorage.setItem(THEME,nx)}catch(e){}
+  });
+  try{var th=localStorage.getItem(THEME);if(th)document.documentElement.setAttribute('data-theme',th)}catch(e){}
+
+  function tipH(x){return '<div class="tip'+(x.care?' care':'')+'"><span class="dot"></span><div><h3>'+x.t+'</h3><p>'+x.b+'</p></div></div>'}
+  function week(){
+    var h='';
+    for(var i=6;i>=0;i--){var d=iso(addDays(new Date(),-i)),e=store[d];
+      h+='<div class="wd'+(e?' on':'')+(i===0?' now':'')+'"'+(e?' style="--c:var(--c'+e.mood+')"':'')+'><span class="f">'+(e?face(e.mood,26):'')+'</span><small>'+'SMTWTFS'.charAt(fromIso(d).getDay())+'</small></div>'}
+    $('week').innerHTML=h;
+  }
+  var br=null,orb=$('orb'),orbt=$('orbt'),bb=$('breathBtn');
+  function stopBreath(){
+    if(br===null)return;clearTimeout(br);br=null;
+    orb.style.transitionDuration='1s';orb.style.transform='scale(.55)';orbt.textContent='Ready when you are';bb.textContent='Start';
+  }
+  function cycle(){
+    orbt.textContent='Breathe in';orb.style.transitionDuration='4s';orb.style.transform='scale(1)';
+    br=setTimeout(function(){orbt.textContent='Breathe out';orb.style.transitionDuration='6s';orb.style.transform='scale(.55)';br=setTimeout(cycle,6000)},4000);
+  }
+  bb.addEventListener('click',function(){if(br!==null){stopBreath();return}bb.textContent='Stop';cycle()});
+
+  var PAGES=['today','trends','insights','history','support'],TITLES={today:'Today',trends:'Trends',insights:'Insights',history:'History',support:'Support'};
+  function route(){
+    var p=location.hash.replace('#/','')||'today';if(PAGES.indexOf(p)<0)p='today';
+    document.querySelectorAll('.page').forEach(function(x){x.classList.toggle('on',x.id==='p-'+p)});
+    document.querySelectorAll('a[data-p]').forEach(function(a){if(a.dataset.p===p)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+    document.title=TITLES[p]+' \u00b7 Steady';
+    if(p!=='support')stopBreath();
+    if(p==='trends')chart(true);
+    window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange',route);
+  loadForm();render(true);route();
+})();
+</script>
+</body>
+</html>
